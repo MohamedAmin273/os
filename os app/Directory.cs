@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 
 
 
@@ -26,7 +27,7 @@ namespace osApp
         // Get Directory Entry
         public Directory_Entry GetDirectoryEntry()
         {
-            return new Directory_Entry(dir_name, dir_attr, dir_firstCluster, 0);
+            return new Directory_Entry(dir_name, dir_attr, dir_firstCluster);
         }
 
         // Get Size on Disk
@@ -77,7 +78,7 @@ namespace osApp
             if (DirOrFiles.Count > 0)
             {
                 List<byte> dirBytes = Converter.DirectoryEntryToBytes(DirOrFiles);
-                List<List<byte>> bytesChunks = Converter.SplitBytes(dirBytes,1024);
+                List<List<byte>> bytesChunks = Converter.SplitBytes(dirBytes, 1024);
 
                 int clusterFATIndex = dir_firstCluster != 0 ? dir_firstCluster : MiniFAT.get_available();
                 dir_firstCluster = clusterFATIndex;
@@ -101,29 +102,51 @@ namespace osApp
         }
 
         // Read Directory
-            public void ReadDirectory()
+        public void ReadDirectory()
+        {
+            DirOrFiles.Clear();
+
+            if (dir_firstCluster == 0) return;
+
+            int cluster = dir_firstCluster;
+            int next = MiniFAT.get_cluster_pointer(cluster);
+            List<byte> data = new List<byte>();
+            while (cluster != -1)
             {
-                DirOrFiles.Clear();
+                byte[] clusterData = VirtualDisk.ReadCluster(cluster);
+                data.AddRange(clusterData);
 
-                if (dir_firstCluster == 0) return;
-
-                int cluster = dir_firstCluster;
-                int next = MiniFAT.get_cluster_pointer(cluster);
-                List<byte> data = new List<byte>();
-                while (cluster != -1)
-                {
-                    byte[] clusterData = VirtualDisk.ReadCluster(cluster);
-                    data.AddRange(clusterData);
-
-                    cluster = next;
-                    if (cluster != -1)
-                        next = MiniFAT.get_cluster_pointer(cluster);
-                }
-
-                DirOrFiles = Converter.BytesToDirectoryEntries(data);
+                cluster = next;
+                if (cluster != -1)
+                    next = MiniFAT.get_cluster_pointer(cluster);
             }
 
-        
+            DirOrFiles = Converter.BytesToDirectoryEntries(data);
+        }
+        public void UpdateContent(Directory_Entry oldEntry, Directory_Entry newEntry)
+        {
+            // Find the index of the old entry
+            int index = SearchDirectory(oldEntry.dir_name.ToString());
+
+            // If the old entry was found, update it with the new entry
+            if (index != -1)
+            {
+                DirOrFiles[index] = newEntry;
+            }
+        }
+        public bool canadd(Directory_Entry d)
+        {
+            int needs = (DirOrFiles.Count + 1) / 32;
+            int needc = needs / 1024;
+            int res = needs % 1024;
+            if (res > 0)
+                needc++;
+            needc += d.dir_fileSize / 1024;
+            int re1 = d.dir_fileSize % 1024;
+            if(re1>0) needc++;
+            return GetMySizeOnDisk() + MiniFAT.get_available() >= needc;
+
+        }
     }
 }
 

@@ -72,6 +72,7 @@
 //     };
 // }
 
+using System.Numerics;
 using System.Text;
 
 namespace osApp
@@ -203,7 +204,7 @@ namespace osApp
                 int fileSize = BitConverter.ToInt32(entryBytes.Skip(28).Take(4).ToArray(), 0); // 4 بايت لحجم الملف
 
                 // إنشاء Directory_Entry
-                Directory_Entry entry = new Directory_Entry(name, dirAttr, firstCluster, fileSize);
+                Directory_Entry entry = new Directory_Entry(name, dirAttr, firstCluster);
 
                 // إضافة الـ entry إلى القائمة
                 entries.Add(entry);
@@ -223,15 +224,65 @@ namespace osApp
         }
         
 
-        public static List<List<byte>> SplitBytes(List<byte> byteArray, int chunkSize)
+ public static List<List<byte>> SplitBytes(List<byte> bytes, int chunkSize = 1024)
+    {
+        List<List<byte>> result = new List<List<byte>>();
+
+        if (bytes.Count > 0)
         {
-            List<List<byte>> chunks = new List<List<byte>>();
-            for (int i = 0; i < byteArray.Count; i += chunkSize)
+            int numberOfArrays = bytes.Count / chunkSize;
+            int rem = bytes.Count % chunkSize;
+
+            for (int i = 0; i < numberOfArrays; i++)
             {
-                List<byte> chunk = byteArray.GetRange(i, Math.Min(chunkSize, byteArray.Count - i));
-                chunks.Add(chunk);
+                List<byte> b = new List<byte>();
+                for (int j = i * chunkSize, k = 0; k < chunkSize; j++, k++)
+                {
+                    b.Add(bytes[j]);
+                }
+                result.Add(b);
             }
-            return chunks;
+
+            if (rem > 0)
+            {
+                List<byte> b1 = new List<byte>(chunkSize);
+                for (int i = numberOfArrays * chunkSize, k = 0; k < rem; i++, k++)
+                {
+                    b1.Add(bytes[i]);
+                }
+                for (int i = rem; i < chunkSize; i++)
+                {
+                    b1.Add(0); // Pad with zeros
+                }
+                result.Add(b1);
+            }
+        }
+        else
+        {
+            List<byte> b1 = new List<byte>(chunkSize);
+            for (int i = 0; i < chunkSize; i++)
+            {
+                b1.Add(0);
+            }
+            result.Add(b1);
+        }
+
+        return result;
+    }
+        public static List<byte> StringToBytesList(string s)
+        {
+            List<byte> bytes = new List<byte>();
+            foreach (char c in s)
+            {
+                bytes.Add((byte)c);
+            }
+            bytes.Add(0); 
+            return bytes;
+        }
+        public static string BytesToString(List<byte> bytes)
+        {
+            byte[] byteArray = bytes.ToArray();
+            return System.Text.Encoding.ASCII.GetString(byteArray, 0, byteArray.Length);
         }
     }
 }

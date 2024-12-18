@@ -7,10 +7,11 @@
         public  char dir_att;
         public  char[] dir_empty = new char[12];
         public  int dir_FirstCluster;
-        public  int dir_fileSize;
+        public int dir_fileSize {  get; set; }
 
-        public  Directory_Entry(string name, char dirAtt, int dir_FCluster, int sizeF)
+        public  Directory_Entry(string name, char dirAtt, int dir_FCluster)
         {
+   
             string clean = cleanName(name);
             for (int i = 0; i < 11; i++)
             {
@@ -25,7 +26,6 @@
             }
             dir_att = dirAtt;
             dir_FirstCluster = dir_FCluster;
-            dir_fileSize = sizeF;
         }
         public static string cleanName(string N)
         {
