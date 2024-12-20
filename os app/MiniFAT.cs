@@ -104,5 +104,63 @@ namespace osApp
                 return -1;
             return FAT[cluster];
         }
+        public static int Get_Number_Of_Free_Blocks()
+        {
+            int count = 0;
+            foreach (int f in FAT)
+            {
+                if (f == 0)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+        public static int Get_Free_Space()
+        {
+            return Get_Number_Of_Free_Blocks() * 1024;
+        } 
+        public static void InitializeOrOpenFileSystem(string name)
+        {
+            // إنشاء دليل الجذر
+            Directory Root = new Directory("root", 'D', 0, null);
+            Program.currentDirectory = Root;
+            Program.path = new string(Root.dir_name);
+
+            // فتح أو إنشاء القرص
+            VirtualDisk.OpenOrCreate(name);
+
+            if (VirtualDisk.IsNewFile())
+            {
+                // كتابة السوبر بلوك
+                byte[] superBlock = MiniFAT.CreateSuperBlock().ToArray();
+                VirtualDisk.WriteCluster(superBlock, 0);
+
+                // تهيئة جدول FAT
+                MiniFAT.InitializeFAT();
+                MiniFAT.WriteFAT();
+
+                // كتابة الدليل الجذر إلى القرص
+                Root.WriteDirectory();
+            }
+            else
+            {
+                // قراءة جدول FAT
+                MiniFAT.ReadFAT();
+
+                // قراءة محتويات الجذر من القرص
+                Root.ReadDirectory();
+            }
+        }
+
+        
+        public static void Print_Clusters()
+        {
+            Console.WriteLine("Fat Table: ");
+            for (int i = 0; i < FAT.Length; i++)
+            {
+                Console.WriteLine($"Block {i}: {FAT[i]}");
+            }
+        }
     }
 }

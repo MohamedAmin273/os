@@ -54,6 +54,7 @@ namespace osApp
             }
             return size * 1024; // حجم كل كلستر
         }
+        
 
         // Add Entry
         public void AddEntry(Directory_Entry d)
@@ -118,24 +119,37 @@ namespace osApp
         // Read Directory
         public void ReadDirectory()
         {
-            DirOrFiles.Clear();
+            // تنظيف القائمة الحالية من الملفات والمجلدات
+            DirOrFiles = new List<Directory_Entry>();
 
-            if (dir_firstCluster == 0) return;
-
-            int cluster = dir_firstCluster;
-            int next = MiniFAT.get_cluster_pointer(cluster);
-            List<byte> data = new List<byte>();
-            while (cluster != -1)
+            // إذا لم يكن هناك كتلة أولى (دليل فارغ)، لا يوجد شيء للقراءة
+            if (dir_firstCluster == 0)
             {
-                byte[] clusterData = VirtualDisk.ReadCluster(cluster);
-                data.AddRange(clusterData);
-
-                cluster = next;
-                if (cluster != -1)
-                    next = MiniFAT.get_cluster_pointer(cluster);
+                Console.WriteLine("Directory is empty or uninitialized.");
+                return;
             }
 
+            // بدء قراءة البيانات من الكتلة الأولى
+            int cluster = dir_firstCluster;
+            List<byte> data = new List<byte>();
+
+            // قراءة الكتل المرتبطة بالدليل من VirtualDisk باستخدام MiniFAT
+            while (cluster != -1)
+            {
+                // قراءة بيانات الكتلة الحالية
+                byte[] clusterData = osApp.VirtualDisk.ReadCluster(cluster);
+                //
+                // // إضافة البيانات إلى القائمة
+                data.AddRange(clusterData);
+
+                // الانتقال إلى الكتلة التالية باستخدام MiniFAT
+                cluster = MiniFAT.get_cluster_pointer(cluster);
+            }
+
+            // تحويل البيانات الخام إلى إدخالات دليل
             DirOrFiles = Converter.BytesToDirectoryEntries(data);
+
+            Console.WriteLine($"Read {DirOrFiles.Count} entries from directory '{dir_name}'.");
         }
         public void UpdateContent(Directory_Entry oldEntry, Directory_Entry newEntry)
         {

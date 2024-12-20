@@ -8,6 +8,10 @@
         public  char[] dir_empty = new char[12];
         public  int dir_FirstCluster;
         public int dir_fileSize {  get; set; }
+        public Directory_Entry()  // Empty constructor
+        {
+
+        }
 
         public  Directory_Entry(string name, char dirAtt, int dir_FCluster)
         {

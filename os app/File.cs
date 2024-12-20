@@ -23,7 +23,7 @@ namespace osApp
             Content = string.Empty;
             Parent = parent;
         }
-        public int GetMySizeOnDisk()
+        public  int GetMySizeOnDisk()
         {
             int size = 0;
 
