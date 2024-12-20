@@ -14,7 +14,6 @@ namespace osApp
         public int dir_firstCluster;
         public Directory parent;
         public List<Directory_Entry> DirOrFiles = new List<Directory_Entry>();
-
         // Constructor
         public Directory(string name, char dirAttr, int dirFirstCluster, Directory parentDir = null)
         {
@@ -25,6 +24,12 @@ namespace osApp
         }
 
         // Get Directory Entry
+        public Directory_Entry GetDirectoryEntryByName(string name)
+        {
+            return DirOrFiles.FirstOrDefault(entry => new string(entry.dir_name).Trim() == name);
+        }
+
+        // دالة لإرجاع Directory_Entry بناءً على خصائص الدليل الحالي
         public Directory_Entry GetDirectoryEntry()
         {
             return new Directory_Entry(dir_name, dir_attr, dir_firstCluster);
@@ -77,29 +82,38 @@ namespace osApp
         {
             if (DirOrFiles.Count > 0)
             {
+                // تحويل المدخلات إلى بايتات وتقسيمها إلى قطع
                 List<byte> dirBytes = Converter.DirectoryEntryToBytes(DirOrFiles);
                 List<List<byte>> bytesChunks = Converter.SplitBytes(dirBytes, 1024);
 
+                // تعيين الكتلة الأولى إذا لم تكن موجودة مسبقًا
                 int clusterFATIndex = dir_firstCluster != 0 ? dir_firstCluster : MiniFAT.get_available();
+        
+                // تحديث dir_firstCluster إذا لم تكن مُعينة مسبقًا
                 dir_firstCluster = clusterFATIndex;
 
                 int lastCluster = -1;
 
+                // كتابة كل Chunk إلى الكتل المتوفرة
                 foreach (var chunk in bytesChunks)
                 {
-                    if (clusterFATIndex == -1) break;
-
+                    // كتابة البيانات إلى الكتلة الحالية
                     VirtualDisk.WriteCluster(chunk.ToArray(), clusterFATIndex);
+
+                    // تحديث الـ FAT
                     MiniFAT.set_cluster_pointer(clusterFATIndex, -1);
-
                     if (lastCluster != -1)
+                    {
                         MiniFAT.set_cluster_pointer(lastCluster, clusterFATIndex);
+                    }
 
+                    // تحديث المؤشر إلى الكتلة التالية
                     lastCluster = clusterFATIndex;
-                    clusterFATIndex = MiniFAT.get_available();
+                    clusterFATIndex = MiniFAT.get_available(); // الحصول على الكتلة التالية
                 }
             }
         }
+
 
         // Read Directory
         public void ReadDirectory()
@@ -147,6 +161,10 @@ namespace osApp
             return GetMySizeOnDisk() + MiniFAT.get_available() >= needc;
 
         }
+       
+
+       
+        
     }
 }
 

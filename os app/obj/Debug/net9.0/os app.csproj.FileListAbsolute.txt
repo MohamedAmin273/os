@@ -12,3 +12,4 @@
 /home/oem/Downloads/one/osP-ea1d4424a410b005a72d979057aeadc1a40527ac/os app/os app/obj/Debug/net9.0/os app.pdb
 /home/oem/Downloads/one/osP-ea1d4424a410b005a72d979057aeadc1a40527ac/os app/os app/obj/Debug/net9.0/os app.genruntimeconfig.cache
 /home/oem/Downloads/one/osP-ea1d4424a410b005a72d979057aeadc1a40527ac/os app/os app/obj/Debug/net9.0/ref/os app.dll
+/home/oem/Downloads/one/osP-ea1d4424a410b005a72d979057aeadc1a40527ac/os app/os app/obj/Debug/net9.0/os app.sourcelink.json
