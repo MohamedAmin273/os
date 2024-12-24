@@ -2,9 +2,15 @@ namespace osApp;
 
 public class commend
 {
+<<<<<<< HEAD
     public static string rootDirectoryName = "/";
     public static Directory currentDirectory;
     public static string currentPath;
+=======
+    private static Directory currentDirectory;
+    private static string currentPath;
+    public static string rootDirectoryName = "S:";
+>>>>>>> origin/main
 
     public commend(string rootDirectoryName, Directory rootDirectory)
     {
@@ -14,7 +20,11 @@ public class commend
     }
 
 
+<<<<<<< HEAD
     public static void Clear()
+=======
+    public void Clear()
+>>>>>>> origin/main
     {
         Console.Clear();
     }
@@ -24,6 +34,7 @@ public class commend
         Environment.Exit(0);
     }
 
+<<<<<<< HEAD
      public static void Help()  //help
         {
             Console.WriteLine("Available commands:\n");
@@ -71,6 +82,8 @@ public class commend
             }
         }
 
+=======
+>>>>>>> origin/main
 //     public static Directory MoveToDir(string fullPath)
 //     {
 //         // Split the path into parts
@@ -116,6 +129,7 @@ public class commend
 //
 //         return currentDirectory;
 //     }
+<<<<<<< HEAD
     // public static Directory MoveToDir(string fullPath)
     // {
     //     // Split the path into parts using '/' as the delimiter
@@ -170,11 +184,21 @@ public class commend
         string[] parts = fullPath.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
         if (parts.Length == 0 || !parts[0].Equals(Program.rootDirectoryName, StringComparison.OrdinalIgnoreCase))
+=======
+    public static Directory MoveToDir(string fullPath)
+    {
+        // Split the path into parts using '/' as the delimiter
+        string[] Parts = fullPath.Split("S:");
+
+        // Validate the root directory, for Linux the root is '/'
+        if (Parts.Length == 0 || Parts[0] != rootDirectoryName)  // تأكد من أنك تتحقق من الجذر بشكل صحيح
+>>>>>>> origin/main
         {
             Console.WriteLine("Error: Invalid root directory.");
             return null;
         }
 
+<<<<<<< HEAD
         Directory tempDirectory = new Directory(parts[0], 'D', 0, null);
         tempDirectory.ReadDirectory();
         string tempPath = parts[0];
@@ -183,6 +207,19 @@ public class commend
         {
             string dirName = parts[i];
 
+=======
+        // Initialize the root directory (assuming rootDirectoryName is "/")
+        Directory tempDirectory = new Directory(rootDirectoryName, 'D', 0, null);
+        tempDirectory.ReadDirectory();
+        string tempPath = rootDirectoryName; // Start from root
+
+        // Traverse through the path
+        for (int i = 1; i < Parts.Length; i++)
+        {
+            string dirName = Parts[i];
+
+            // Search for the directory in the current directory
+>>>>>>> origin/main
             int index = tempDirectory.SearchDirectory(dirName);
             if (index == -1)
             {
@@ -190,6 +227,7 @@ public class commend
                 return null;
             }
 
+<<<<<<< HEAD
             Directory_Entry nextEntry = tempDirectory.DirOrFiles[index];
             tempDirectory = new Directory(new string(nextEntry.dir_name), nextEntry.dir_att, nextEntry.dir_FirstCluster, tempDirectory);
             tempDirectory.ReadDirectory();
@@ -228,5 +266,24 @@ public class commend
     //     return file;
     // }
 
+=======
+            // Get the directory entry
+            Directory_Entry nextEntry = tempDirectory.DirOrFiles[index];
+
+            // Instantiate the next directory
+            tempDirectory = new Directory(new string(nextEntry.dir_name), nextEntry.dir_att, nextEntry.dir_FirstCluster, tempDirectory);
+            tempDirectory.ReadDirectory();
+
+            // Update the path
+            tempPath += "/" + dirName;
+        }
+
+        // Set the current directory and path
+        currentDirectory = tempDirectory;
+        currentPath = tempPath;
+
+        return currentDirectory;
+    }
+>>>>>>> origin/main
 
 }
